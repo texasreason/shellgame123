@@ -27,13 +27,19 @@ const GameBoard = ({ cups, onCupClick, isRevealed, isShuffling }: GameBoardProps
           className="absolute"
           initial={{ x: positions[index].x, y: positions[index].y }}
           animate={{ 
-            x: positions[isShuffling ? (index + 1) % cups.length : index].x,
-            y: positions[isShuffling ? (index + 1) % cups.length : index].y,
+            x: positions[isShuffling ? (index + 2) % cups.length : index].x,
+            y: positions[isShuffling ? (index + 2) % cups.length : index].y,
+            rotate: isShuffling ? [0, 360] : 0
           }}
           transition={{
             duration: 0.5,
             repeat: isShuffling ? Infinity : 0,
-            ease: "easeInOut"
+            ease: "easeInOut",
+            rotate: {
+              duration: 0.5,
+              repeat: isShuffling ? Infinity : 0,
+              ease: "linear"
+            }
           }}
         >
           <Cup
