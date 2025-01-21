@@ -11,7 +11,7 @@ const MOVE_DURATION = 500; // 0.5 seconds per move
 const Game = () => {
   const [gameState, setGameState] = useState(generateInitialState());
   const [score, setScore] = useState(0);
-  const [revealedCups, setRevealedCups] = useState<boolean[]>(new Array(5).fill(false));
+  const [revealedCups, setRevealedCups] = useState<boolean[]>(new Array(5).fill(true));
   const [isShuffling, setIsShuffling] = useState(false);
   const [currentMove, setCurrentMove] = useState<[number, number] | null>(null);
   const [roundComplete, setRoundComplete] = useState(false);
@@ -42,12 +42,14 @@ const Game = () => {
     }
 
     // Check if all balls have been found or if two guesses have been made
+    const guessesUsed = newRevealedCups.filter(revealed => revealed).length;
     const ballsFound = gameState.reduce((count, hasBall, i) => 
       count + (hasBall && newRevealedCups[i] ? 1 : 0), 0);
-    const guessesUsed = newRevealedCups.filter(revealed => revealed).length;
 
     if (ballsFound === 2 || guessesUsed >= 2) {
       setRoundComplete(true);
+      // Reveal all cups at the end of the round
+      setRevealedCups(new Array(5).fill(true));
     }
   };
 
@@ -61,28 +63,29 @@ const Game = () => {
 
     const move = moveSequenceRef.current[moveIndexRef.current];
     setCurrentMove(move);
-    setGameState(prevState => shuffleCups(prevState, move[0], move[1]));
 
-    moveIndexRef.current++;
-    setTimeout(performNextMove, MOVE_DURATION);
+    // Update game state after move completion
+    setTimeout(() => {
+      setGameState(prevState => shuffleCups(prevState, move[0], move[1]));
+      moveIndexRef.current++;
+      setTimeout(performNextMove, 100); // Small delay between moves
+    }, MOVE_DURATION);
   };
 
   const startNewRound = () => {
+    // Reset game state
     const newState = generateInitialState();
     setGameState(newState);
-    setRevealedCups(new Array(5).fill(false));
+    setRevealedCups(new Array(5).fill(true)); // Show all cups initially
     setIsShuffling(false);
     setCurrentMove(null);
     setRoundComplete(false);
     moveIndexRef.current = 0;
 
-    // Show all balls initially
-    setRevealedCups(new Array(5).fill(true));
+    // Generate new sequence of moves
+    moveSequenceRef.current = generateMoveSequence(8);
 
-    // Generate a new sequence of moves
-    moveSequenceRef.current = generateMoveSequence(8); // 8 moves per round
-
-    // Hide all cups and start shuffling after reveal duration
+    // After reveal duration, hide cups and start shuffling
     setTimeout(() => {
       setRevealedCups(new Array(5).fill(false));
       setIsShuffling(true);
