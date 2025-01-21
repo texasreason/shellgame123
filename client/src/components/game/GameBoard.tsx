@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 interface GameBoardProps {
   cups: boolean[];
   onCupClick: (index: number) => void;
-  isRevealed: boolean;
+  revealedCups: boolean[];
   isShuffling: boolean;
   currentMove: [number, number] | null;
 }
 
-const GameBoard = ({ cups, onCupClick, isRevealed, isShuffling, currentMove }: GameBoardProps) => {
+const GameBoard = ({ cups, onCupClick, revealedCups, isShuffling, currentMove }: GameBoardProps) => {
   // Calculate positions in a circle
   const radius = 150; // radius of the circle
   const positions = cups.map((_, index) => {
@@ -44,7 +44,7 @@ const GameBoard = ({ cups, onCupClick, isRevealed, isShuffling, currentMove }: G
             <Cup
               index={index}
               hasBall={hasBall}
-              isRevealed={isRevealed}
+              isRevealed={revealedCups[index]}
               isShuffling={isShuffling}
               onClick={() => onCupClick(index)}
             />

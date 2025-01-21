@@ -11,17 +11,21 @@ const MOVE_DURATION = 500; // 0.5 seconds per move
 const Game = () => {
   const [gameState, setGameState] = useState(generateInitialState());
   const [score, setScore] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(true);
+  const [revealedCups, setRevealedCups] = useState<boolean[]>(new Array(5).fill(false));
   const [isShuffling, setIsShuffling] = useState(false);
   const [currentMove, setCurrentMove] = useState<[number, number] | null>(null);
+  const [roundComplete, setRoundComplete] = useState(false);
   const moveSequenceRef = useRef<Array<[number, number]>>([]);
   const moveIndexRef = useRef(0);
   const { toast } = useToast();
 
   const handleCupClick = (index: number) => {
-    if (isRevealed || isShuffling) return;
+    if (isShuffling || revealedCups[index] || roundComplete) return;
 
-    setIsRevealed(true);
+    const newRevealedCups = [...revealedCups];
+    newRevealedCups[index] = true;
+    setRevealedCups(newRevealedCups);
+
     if (gameState[index]) {
       setScore(prev => prev + 1);
       toast({
@@ -35,6 +39,15 @@ const Game = () => {
         description: "No ball under this cup",
         variant: "destructive",
       });
+    }
+
+    // Check if all balls have been found or if three guesses have been made
+    const ballsFound = gameState.reduce((count, hasBall, i) => 
+      count + (hasBall && newRevealedCups[i] ? 1 : 0), 0);
+    const guessesUsed = newRevealedCups.filter(revealed => revealed).length;
+
+    if (ballsFound === 2 || guessesUsed >= 3) {
+      setRoundComplete(true);
     }
   };
 
@@ -57,18 +70,22 @@ const Game = () => {
   const startNewRound = () => {
     const newState = generateInitialState();
     setGameState(newState);
-    setIsRevealed(true);
+    setRevealedCups(new Array(5).fill(false));
     setIsShuffling(false);
     setCurrentMove(null);
+    setRoundComplete(false);
     moveIndexRef.current = 0;
+
+    // Show all balls initially
+    setRevealedCups(new Array(5).fill(true));
 
     // Generate a new sequence of moves
     moveSequenceRef.current = generateMoveSequence(8); // 8 moves per round
 
-    // Show balls initially, then start shuffling
+    // Hide all cups and start shuffling after reveal duration
     setTimeout(() => {
+      setRevealedCups(new Array(5).fill(false));
       setIsShuffling(true);
-      setIsRevealed(false);
       performNextMove();
     }, REVEAL_DURATION);
   };
@@ -86,21 +103,23 @@ const Game = () => {
         <ScoreBoard score={score} />
 
         <div className="text-center mb-4">
-          {isRevealed && !isShuffling && (
+          {revealedCups.every(revealed => revealed) && !isShuffling && (
             <p className="text-lg font-semibold text-primary">Watch carefully where the balls are!</p>
           )}
           {isShuffling && (
             <p className="text-lg font-semibold text-primary animate-pulse">Shuffling cups...</p>
           )}
-          {!isRevealed && !isShuffling && (
-            <p className="text-lg font-semibold text-primary">Find the balls!</p>
+          {!isShuffling && !revealedCups.every(revealed => revealed) && (
+            <p className="text-lg font-semibold text-primary">
+              {roundComplete ? "Round Complete!" : "Find the balls! (3 guesses max)"}
+            </p>
           )}
         </div>
 
         <GameBoard 
           cups={gameState}
           onCupClick={handleCupClick}
-          isRevealed={isRevealed}
+          revealedCups={revealedCups}
           isShuffling={isShuffling}
           currentMove={currentMove}
         />
@@ -109,9 +128,9 @@ const Game = () => {
           <Button
             onClick={startNewRound}
             className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg"
-            disabled={isShuffling}
+            disabled={isShuffling || (!roundComplete && !revealedCups.every(revealed => revealed))}
           >
-            {isRevealed ? "Start New Round" : "Reset Game"}
+            {roundComplete ? "Start New Round" : "Watch Carefully"}
           </Button>
         </div>
       </div>
