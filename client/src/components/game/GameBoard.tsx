@@ -9,24 +9,43 @@ interface GameBoardProps {
 }
 
 const GameBoard = ({ cups, onCupClick, isRevealed, isShuffling }: GameBoardProps) => {
+  // Calculate positions in a circle
+  const radius = 150; // radius of the circle
+  const positions = cups.map((_, index) => {
+    const angle = (index / cups.length) * 2 * Math.PI - Math.PI / 2; // Start from top
+    return {
+      x: radius * Math.cos(angle),
+      y: radius * Math.sin(angle),
+    };
+  });
+
   return (
-    <motion.div 
-      className="flex flex-wrap justify-center gap-8 my-12"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="relative h-[400px] w-full flex items-center justify-center my-12">
       {cups.map((hasBall, index) => (
-        <Cup
+        <motion.div
           key={index}
-          index={index}
-          hasBall={hasBall}
-          isRevealed={isRevealed}
-          isShuffling={isShuffling}
-          onClick={() => onCupClick(index)}
-        />
+          className="absolute"
+          initial={{ x: positions[index].x, y: positions[index].y }}
+          animate={{ 
+            x: positions[isShuffling ? (index + 1) % cups.length : index].x,
+            y: positions[isShuffling ? (index + 1) % cups.length : index].y,
+          }}
+          transition={{
+            duration: 0.5,
+            repeat: isShuffling ? Infinity : 0,
+            ease: "easeInOut"
+          }}
+        >
+          <Cup
+            index={index}
+            hasBall={hasBall}
+            isRevealed={isRevealed}
+            isShuffling={isShuffling}
+            onClick={() => onCupClick(index)}
+          />
+        </motion.div>
       ))}
-    </motion.div>
+    </div>
   );
 };
 

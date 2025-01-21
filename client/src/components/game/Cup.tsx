@@ -9,13 +9,12 @@ interface CupProps {
 }
 
 const Cup = ({ isRevealed, isShuffling, hasBall, onClick, index }: CupProps) => {
-  const shuffleAnimation = {
-    x: [0, -50, 50, -30, 30, 0],
-    y: [0, 20, -20, 15, -15, 0],
+  const rotateAnimation = {
+    rotateY: [0, 360],
     transition: {
-      duration: 0.5,
+      duration: 1,
       repeat: Infinity,
-      repeatType: "reverse" as const,
+      ease: "linear"
     }
   };
 
@@ -23,7 +22,7 @@ const Cup = ({ isRevealed, isShuffling, hasBall, onClick, index }: CupProps) => 
     <motion.div
       className="relative cursor-pointer w-32 h-40"
       initial={{ rotateX: 0 }}
-      animate={isShuffling ? shuffleAnimation : { rotateX: isRevealed ? 180 : 0 }}
+      animate={isShuffling ? rotateAnimation : { rotateX: isRevealed ? 180 : 0 }}
       transition={isShuffling ? undefined : { duration: 0.5 }}
       onClick={onClick}
       whileHover={{ scale: isRevealed || isShuffling ? 1 : 1.05 }}
