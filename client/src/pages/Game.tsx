@@ -15,6 +15,7 @@ const Game = () => {
   const [isShuffling, setIsShuffling] = useState(false);
   const [currentMove, setCurrentMove] = useState<[number, number] | null>(null);
   const [roundComplete, setRoundComplete] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
   const moveSequenceRef = useRef<Array<[number, number]>>([]);
   const moveIndexRef = useRef(0);
   const { toast } = useToast();
@@ -72,6 +73,12 @@ const Game = () => {
     }, MOVE_DURATION);
   };
 
+  const startShuffling = () => {
+    setRevealedCups(new Array(5).fill(false));
+    setIsShuffling(true);
+    performNextMove();
+  };
+
   const startNewRound = () => {
     // Reset game state
     const newState = generateInitialState();
@@ -80,23 +87,23 @@ const Game = () => {
     setIsShuffling(false);
     setCurrentMove(null);
     setRoundComplete(false);
+    setIsStarted(false);
     moveIndexRef.current = 0;
 
     // Generate new sequence of moves
     moveSequenceRef.current = generateMoveSequence(8);
-
-    // After reveal duration, hide cups and start shuffling
-    setTimeout(() => {
-      setRevealedCups(new Array(5).fill(false));
-      setIsShuffling(true);
-      performNextMove();
-    }, REVEAL_DURATION);
   };
 
   // Start first round
   useEffect(() => {
     startNewRound();
   }, []);
+
+  const handleStartClick = () => {
+    setIsStarted(true);
+    // After reveal duration, start shuffling
+    setTimeout(startShuffling, REVEAL_DURATION);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-500 to-yellow-500 flex flex-col items-center justify-center p-4">
@@ -106,7 +113,10 @@ const Game = () => {
         <ScoreBoard score={score} />
 
         <div className="text-center mb-4">
-          {revealedCups.every(revealed => revealed) && !isShuffling && (
+          {revealedCups.every(revealed => revealed) && !isShuffling && !isStarted && (
+            <p className="text-lg font-semibold text-primary">Ready to play? Press Start when you've memorized the ball positions!</p>
+          )}
+          {revealedCups.every(revealed => revealed) && !isShuffling && isStarted && (
             <p className="text-lg font-semibold text-primary">Watch carefully where the balls are!</p>
           )}
           {isShuffling && (
@@ -128,13 +138,23 @@ const Game = () => {
         />
 
         <div className="mt-8 flex justify-center">
-          <Button
-            onClick={startNewRound}
-            className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg"
-            disabled={isShuffling || (!roundComplete && !revealedCups.every(revealed => revealed))}
-          >
-            {roundComplete ? "Start New Round" : "Watch Carefully"}
-          </Button>
+          {!isStarted && !roundComplete ? (
+            <Button
+              onClick={handleStartClick}
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg"
+              disabled={isShuffling}
+            >
+              Start
+            </Button>
+          ) : (
+            <Button
+              onClick={startNewRound}
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg"
+              disabled={isShuffling || (!roundComplete && !revealedCups.every(revealed => revealed))}
+            >
+              {roundComplete ? "Start New Round" : "Watch Carefully"}
+            </Button>
+          )}
         </div>
       </div>
     </div>
