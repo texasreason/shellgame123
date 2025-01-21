@@ -5,9 +5,10 @@ interface GameBoardProps {
   cups: boolean[];
   onCupClick: (index: number) => void;
   isRevealed: boolean;
+  isShuffling: boolean;
 }
 
-const GameBoard = ({ cups, onCupClick, isRevealed }: GameBoardProps) => {
+const GameBoard = ({ cups, onCupClick, isRevealed, isShuffling }: GameBoardProps) => {
   return (
     <motion.div 
       className="flex flex-wrap justify-center gap-8 my-12"
@@ -21,6 +22,7 @@ const GameBoard = ({ cups, onCupClick, isRevealed }: GameBoardProps) => {
           index={index}
           hasBall={hasBall}
           isRevealed={isRevealed}
+          isShuffling={isShuffling}
           onClick={() => onCupClick(index)}
         />
       ))}

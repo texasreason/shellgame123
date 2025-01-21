@@ -2,20 +2,31 @@ import { motion } from "framer-motion";
 
 interface CupProps {
   isRevealed: boolean;
+  isShuffling: boolean;
   hasBall: boolean;
   onClick: () => void;
   index: number;
 }
 
-const Cup = ({ isRevealed, hasBall, onClick, index }: CupProps) => {
+const Cup = ({ isRevealed, isShuffling, hasBall, onClick, index }: CupProps) => {
+  const shuffleAnimation = {
+    x: [0, -50, 50, -30, 30, 0],
+    y: [0, 20, -20, 15, -15, 0],
+    transition: {
+      duration: 0.5,
+      repeat: Infinity,
+      repeatType: "reverse" as const,
+    }
+  };
+
   return (
     <motion.div
       className="relative cursor-pointer w-32 h-40"
       initial={{ rotateX: 0 }}
-      animate={{ rotateX: isRevealed ? 180 : 0 }}
-      transition={{ duration: 0.5 }}
+      animate={isShuffling ? shuffleAnimation : { rotateX: isRevealed ? 180 : 0 }}
+      transition={isShuffling ? undefined : { duration: 0.5 }}
       onClick={onClick}
-      whileHover={{ scale: isRevealed ? 1 : 1.05 }}
+      whileHover={{ scale: isRevealed || isShuffling ? 1 : 1.05 }}
     >
       <div className="absolute w-full h-full">
         {/* Cup Body */}
@@ -23,10 +34,10 @@ const Cup = ({ isRevealed, hasBall, onClick, index }: CupProps) => {
           <div className="absolute top-0 left-0 w-full h-full bg-red-700 rounded-t-lg transform-gpu skew-x-6"></div>
           <div className="absolute top-0 right-0 w-full h-full bg-red-500 rounded-t-lg transform-gpu -skew-x-6"></div>
         </div>
-        
+
         {/* Cup Rim */}
         <div className="absolute bottom-0 w-full h-4 bg-red-800 rounded-full"></div>
-        
+
         {/* Ball */}
         {isRevealed && hasBall && (
           <motion.div
