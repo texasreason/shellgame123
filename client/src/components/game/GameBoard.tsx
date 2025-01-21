@@ -24,7 +24,9 @@ const GameBoard = ({ cups, onCupClick, revealedCups, isShuffling, currentMove }:
     <div className="relative h-[400px] w-full flex items-center justify-center my-12">
       {cups.map((hasBall, index) => {
         const isMoving = currentMove && (index === currentMove[0] || index === currentMove[1]);
-        const targetIndex = currentMove && index === currentMove[0] ? currentMove[1] : index;
+        const targetIndex = currentMove && index === currentMove[0] ? currentMove[1] : 
+                          currentMove && index === currentMove[1] ? currentMove[0] : 
+                          index;
 
         return (
           <motion.div
@@ -35,10 +37,13 @@ const GameBoard = ({ cups, onCupClick, revealedCups, isShuffling, currentMove }:
               x: positions[targetIndex].x,
               y: positions[targetIndex].y,
               scale: isMoving ? 1.1 : 1,
+              zIndex: isMoving ? 10 : 1,
             }}
             transition={{
-              duration: 0.5,
-              ease: "easeInOut"
+              type: "spring",
+              stiffness: 150,
+              damping: 20,
+              mass: 1,
             }}
           >
             <Cup
