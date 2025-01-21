@@ -19,23 +19,39 @@ const Cup = ({ isRevealed, isShuffling, hasBall, onClick, index }: CupProps) => 
       whileHover={{ scale: isRevealed || isShuffling ? 1 : 1.05 }}
     >
       <div className="absolute w-full h-full">
-        {/* Cup Body */}
-        <div className="absolute bottom-0 w-full h-4/5 bg-red-600 rounded-t-lg transform-gpu perspective-1000">
-          <div className="absolute top-0 left-0 w-full h-full bg-red-700 rounded-t-lg transform-gpu skew-x-6"></div>
-          <div className="absolute top-0 right-0 w-full h-full bg-red-500 rounded-t-lg transform-gpu -skew-x-6"></div>
+        {/* Shell Body */}
+        <div className="absolute bottom-0 w-full h-4/5 bg-gradient-to-br from-red-700 to-red-500 rounded-t-[100px] transform-gpu perspective-1000 shadow-lg">
+          {/* Shell Ridges */}
+          <div className="absolute top-0 left-0 w-full h-full">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-full h-2 bg-red-600/30"
+                style={{ top: `${(i + 1) * 20}%` }}
+              />
+            ))}
+          </div>
+          <div className="absolute top-0 left-0 w-full h-full bg-red-800/20 rounded-t-[100px] transform-gpu skew-x-6"></div>
+          <div className="absolute top-0 right-0 w-full h-full bg-red-400/20 rounded-t-[100px] transform-gpu -skew-x-6"></div>
         </div>
 
-        {/* Cup Rim */}
-        <div className="absolute bottom-0 w-full h-4 bg-red-800 rounded-full"></div>
+        {/* Shell Base */}
+        <div className="absolute bottom-0 w-full">
+          <div className="h-4 bg-gradient-to-b from-red-900 to-red-800 rounded-full shadow-md"></div>
+          <div className="h-2 bg-red-950 rounded-full -mt-1 opacity-50"></div>
+        </div>
 
         {/* Ball */}
         {isRevealed && hasBall && (
           <motion.div
-            className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-yellow-400 rounded-full shadow-lg"
+            className="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full shadow-lg"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.3 }}
-          />
+          >
+            {/* Ball highlight */}
+            <div className="absolute top-1 left-1 w-2 h-2 bg-yellow-200 rounded-full opacity-80"></div>
+          </motion.div>
         )}
       </div>
     </motion.div>
