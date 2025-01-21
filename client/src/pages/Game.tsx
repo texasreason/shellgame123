@@ -1,18 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import GameBoard from '@/components/game/GameBoard';
 import ScoreBoard from '@/components/game/ScoreBoard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { generateInitialState, shuffleCups } from '@/lib/game';
+import { generateInitialState, shuffleCups, generateMoveSequence } from '@/lib/game';
 
 const REVEAL_DURATION = 2000; // 2 seconds to show initial balls
-const SHUFFLE_DURATION = 3000; // 3 seconds of shuffling animation
+const MOVE_DURATION = 500; // 0.5 seconds per move
 
 const Game = () => {
   const [gameState, setGameState] = useState(generateInitialState());
   const [score, setScore] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(true); // Start revealed
+  const [isRevealed, setIsRevealed] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [currentMove, setCurrentMove] = useState<[number, number] | null>(null);
+  const moveSequenceRef = useRef<Array<[number, number]>>([]);
+  const moveIndexRef = useRef(0);
   const { toast } = useToast();
 
   const handleCupClick = (index: number) => {
@@ -35,28 +38,38 @@ const Game = () => {
     }
   };
 
+  const performNextMove = () => {
+    if (moveIndexRef.current >= moveSequenceRef.current.length) {
+      setIsShuffling(false);
+      setCurrentMove(null);
+      moveIndexRef.current = 0;
+      return;
+    }
+
+    const move = moveSequenceRef.current[moveIndexRef.current];
+    setCurrentMove(move);
+    setGameState(prevState => shuffleCups(prevState, move[0], move[1]));
+
+    moveIndexRef.current++;
+    setTimeout(performNextMove, MOVE_DURATION);
+  };
+
   const startNewRound = () => {
     const newState = generateInitialState();
     setGameState(newState);
     setIsRevealed(true);
     setIsShuffling(false);
+    setCurrentMove(null);
+    moveIndexRef.current = 0;
+
+    // Generate a new sequence of moves
+    moveSequenceRef.current = generateMoveSequence(8); // 8 moves per round
 
     // Show balls initially, then start shuffling
     setTimeout(() => {
       setIsShuffling(true);
       setIsRevealed(false);
-
-      // Perform multiple shuffles during animation
-      const shuffleInterval = setInterval(() => {
-        setGameState(prevState => shuffleCups(prevState));
-      }, 500); // Shuffle every 0.5 seconds
-
-      // Stop shuffling after SHUFFLE_DURATION
-      setTimeout(() => {
-        clearInterval(shuffleInterval);
-        setIsShuffling(false);
-      }, SHUFFLE_DURATION);
-
+      performNextMove();
     }, REVEAL_DURATION);
   };
 
@@ -89,6 +102,7 @@ const Game = () => {
           onCupClick={handleCupClick}
           isRevealed={isRevealed}
           isShuffling={isShuffling}
+          currentMove={currentMove}
         />
 
         <div className="mt-8 flex justify-center">

@@ -6,9 +6,10 @@ interface GameBoardProps {
   onCupClick: (index: number) => void;
   isRevealed: boolean;
   isShuffling: boolean;
+  currentMove: [number, number] | null;
 }
 
-const GameBoard = ({ cups, onCupClick, isRevealed, isShuffling }: GameBoardProps) => {
+const GameBoard = ({ cups, onCupClick, isRevealed, isShuffling, currentMove }: GameBoardProps) => {
   // Calculate positions in a circle
   const radius = 150; // radius of the circle
   const positions = cups.map((_, index) => {
@@ -21,30 +22,35 @@ const GameBoard = ({ cups, onCupClick, isRevealed, isShuffling }: GameBoardProps
 
   return (
     <div className="relative h-[400px] w-full flex items-center justify-center my-12">
-      {cups.map((hasBall, index) => (
-        <motion.div
-          key={index}
-          className="absolute"
-          initial={{ x: positions[index].x, y: positions[index].y }}
-          animate={{ 
-            x: positions[isShuffling ? (index + 2) % cups.length : index].x,
-            y: positions[isShuffling ? (index + 2) % cups.length : index].y
-          }}
-          transition={{
-            duration: 0.5,
-            repeat: isShuffling ? Infinity : 0,
-            ease: "easeInOut"
-          }}
-        >
-          <Cup
-            index={index}
-            hasBall={hasBall}
-            isRevealed={isRevealed}
-            isShuffling={isShuffling}
-            onClick={() => onCupClick(index)}
-          />
-        </motion.div>
-      ))}
+      {cups.map((hasBall, index) => {
+        const isMoving = currentMove && (index === currentMove[0] || index === currentMove[1]);
+        const targetIndex = currentMove && index === currentMove[0] ? currentMove[1] : index;
+
+        return (
+          <motion.div
+            key={index}
+            className="absolute"
+            initial={{ x: positions[index].x, y: positions[index].y }}
+            animate={{ 
+              x: positions[targetIndex].x,
+              y: positions[targetIndex].y,
+              scale: isMoving ? 1.1 : 1,
+            }}
+            transition={{
+              duration: 0.5,
+              ease: "easeInOut"
+            }}
+          >
+            <Cup
+              index={index}
+              hasBall={hasBall}
+              isRevealed={isRevealed}
+              isShuffling={isShuffling}
+              onClick={() => onCupClick(index)}
+            />
+          </motion.div>
+        );
+      })}
     </div>
   );
 };
