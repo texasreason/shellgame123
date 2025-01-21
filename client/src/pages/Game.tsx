@@ -41,12 +41,12 @@ const Game = () => {
       });
     }
 
-    // Check if all balls have been found or if three guesses have been made
+    // Check if all balls have been found or if two guesses have been made
     const ballsFound = gameState.reduce((count, hasBall, i) => 
       count + (hasBall && newRevealedCups[i] ? 1 : 0), 0);
     const guessesUsed = newRevealedCups.filter(revealed => revealed).length;
 
-    if (ballsFound === 2 || guessesUsed >= 3) {
+    if (ballsFound === 2 || guessesUsed >= 2) {
       setRoundComplete(true);
     }
   };
@@ -111,7 +111,7 @@ const Game = () => {
           )}
           {!isShuffling && !revealedCups.every(revealed => revealed) && (
             <p className="text-lg font-semibold text-primary">
-              {roundComplete ? "Round Complete!" : "Find the balls! (3 guesses max)"}
+              {roundComplete ? "Round Complete!" : "Find the balls! (2 guesses max)"}
             </p>
           )}
         </div>
